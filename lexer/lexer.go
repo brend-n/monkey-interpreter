@@ -33,7 +33,14 @@ func (l *Lexer) NextToken() token.Token {
 
 	switch l.ch {
 	case '=':
-		tok.Type = token.ASSIGN
+		if l.peekChar() == '=' {
+			ch := l.ch
+			l.readChar()
+			tok.Literal = string(ch) + string(l.ch)
+			tok.Type = token.EQ
+		} else {
+			tok.Type = token.ASSIGN
+		}
 	case '+':
 		tok.Type = token.PLUS
 	case '(':
@@ -48,6 +55,25 @@ func (l *Lexer) NextToken() token.Token {
 		tok.Type = token.SEMICOLON
 	case ',':
 		tok.Type = token.COMMA
+	case '-':
+		tok.Type = token.MINUS
+	case '!':
+		if l.peekChar() == '=' {
+			ch := l.ch
+			l.readChar()
+			tok.Literal = string(ch) + string(l.ch)
+			tok.Type = token.NOT_EQ
+		} else {
+			tok.Type = token.BANG
+		}
+	case '*':
+		tok.Type = token.ASTERISK
+	case '/':
+		tok.Type = token.SLASH
+	case '<':
+		tok.Type = token.LT
+	case '>':
+		tok.Type = token.GT
 	case 0:
 		tok.Type = token.EOF
 		tok.Literal = ""
@@ -81,6 +107,14 @@ func (l *Lexer) readValue(cb func(byte) bool) string {
 func (l *Lexer) consumeWhitespace() {
 	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
 		l.readChar()
+	}
+}
+
+func (l *Lexer) peekChar() byte {
+	if l.readPosition >= len(l.input) {
+		return 0
+	} else {
+		return l.input[l.readPosition]
 	}
 }
 
